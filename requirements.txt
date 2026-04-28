@@ -1,0 +1,5 @@
+pdfplumber
+jinja2
+pikepdf==8.10.1
+google-api-python-client
+google-auth

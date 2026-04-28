@@ -1,0 +1,241 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<title>Financial Insights Summary</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;">
+<table border="0" cellpadding="0" cellspacing="0" style="background-color: #f1f5f9;" width="100%">
+<tbody><tr>
+<td align="center" style="padding: 40px 0;">
+<!-- Main Container -->
+<table border="0" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; border-collapse: separate; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);" width="600">
+<!-- Header -->
+<tbody><tr>
+<td bgcolor="#0F172A" style="padding: 32px; border-bottom: 4px solid #4f46e5;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td style="color: #ffffff; font-size: 24px; font-weight: bold; letter-spacing: -0.5px;">
+                                        Financial Insights
+                                    </td>
+<td align="right">
+<table border="0" cellpadding="0" cellspacing="0" style="background-color: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 20px;">
+<tbody><tr>
+<td style="padding: 6px 12px; color: #ffffff; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+                                                    SHUBHAM
+                                                </td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<!-- Period Header -->
+<tr>
+<td bgcolor="#f8fafc" style="padding: 24px 32px; border-bottom: 1px solid #f1f5f9;">
+<p style="margin: 0 0 4px 0; color: #64748b; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">Statement Period</p>
+<h2 style="margin: 0; color: #0F172A; font-size: 18px; font-weight: 600;">{{ period }}</h2>
+</td>
+</tr>
+<!-- Hero Summary -->
+<tr>
+<td style="padding: 32px;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<!-- Total Balance -->
+<td bgcolor="#e0e7ff" style="padding: 24px; border-radius: 12px; border-left: 4px solid #4f46e5;" width="48%">
+<p style="margin: 0 0 4px 0; color: #312e81; font-size: 10px; font-weight: bold; text-transform: uppercase;">Total Balance</p>
+<div style="color: #312e81; font-size: 28px; font-weight: bold;">{{ total_balance }}</div>
+</td>
+<td width="4%"> </td>
+<!-- Total Spends -->
+<td bgcolor="#fee2e2" style="padding: 24px; border-radius: 12px; border-left: 4px solid #dc2626;" width="48%">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td>
+<p style="margin: 0 0 4px 0; color: #7f1d1d; font-size: 10px; font-weight: bold; text-transform: uppercase;">Total Spends</p>
+<div style="color: #7f1d1d; font-size: 28px; font-weight: bold;">{{ total_spends }}</div>
+</td>
+<td align="right" valign="top">
+<span style="background-color: #dc2626; color: #ffffff; padding: 2px 6px; border-radius: 10px; font-size: 9px; font-weight: bold;">{{ spend_change }}</span>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+<!-- Dark Stats Box -->
+<table border="0" cellpadding="0" cellspacing="0" style="margin-top: 24px; background-color: #0f172a; border-radius: 12px; overflow: hidden;" width="100%">
+<tbody><tr>
+<td style="padding: 24px;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td width="50%">
+<div style="margin-bottom: 16px;">
+<p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase;">Total Income</p>
+<p style="margin: 0; color: #dcfce7; font-size: 18px; font-weight: bold;">{{ total_income }}</p>
+</div>
+<div>
+<p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase;">Passive Income <span style="color: #dcfce7;">+1%</span></p>
+<p style="margin: 0; color: #f1f5f9; font-size: 18px;">{{ total_passive  }}</p>
+</div>
+</td>
+<td align="right" width="50%">
+<div style="margin-bottom: 16px;">
+<p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase;">Net Savings</p>
+<p style="margin: 0; color: #f87171; font-size: 18px; font-weight: bold;">{{ net_savings }}</p>
+</div>
+<div>
+<p style="margin: 0 0 4px 0; color: #94a3b8; font-size: 10px; font-weight: bold; text-transform: uppercase;">Passive Income Change</p>
+<p style="margin: 0; color: #f1f5f9; font-size: 18px;">{{ passive_change }}</p>
+</div>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<!-- Bank Details Section -->
+<tr>
+<td style="padding: 0 32px 32px 32px;">
+<!-- HDFC Bank -->
+<table border="0" cellpadding="0" cellspacing="0" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; margin-bottom: 24px;" width="100%">
+<tbody><tr>
+<td bgcolor="#f5f3ff" style="padding: 16px 24px; border-bottom: 1px solid #ede9fe;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td width="40">
+<div style="width: 32px; height: 32px; background-color: #4f46e5; border-radius: 4px; text-align: center; line-height: 32px; color: #ffffff; font-weight: bold; font-size: 14px;">H</div>
+</td>
+<td style="padding-left: 8px; color: #312e81; font-size: 16px; font-weight: bold;">{{ hdfc_name }}</td>
+<td align="right">
+<span style="background-color: #ede9fe; color: #4338ca; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-family: 'Courier New', Courier, monospace;">**** 4373</span>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<tr>
+<td style="padding: 24px;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr style="color: #94a3b8; font-size: 9px; font-weight: bold; text-transform: uppercase;">
+<td style="padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">Category</td>
+<td align="right" style="padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">Amount</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Current Balance</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; font-weight: bold; border-bottom: 1px solid #f8fafc; color: #4338ca;">{{ hdfc_balance }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Monthly Spends</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #dc2626;">{{ hdfc_spends }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Salary Credit</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">{{ hdfc_salary }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; color: #334155;">Passive Income</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; color: #10b981;">{{ hdfc_passive }}</td>
+</tr>
+</tbody></table>
+<table border="0" cellpadding="0" cellspacing="0" style="margin-top: 20px; border: 2px dashed #c7d2fe; background-color: #f5f3ff; border-radius: 8px;" width="100%">
+<tbody><tr>
+<td style="padding: 12px;">
+<p style="margin: 0 0 4px 0; color: #818cf8; font-size: 9px; font-weight: bold; text-transform: uppercase;">Highest Transaction</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td style="color: #312e81; font-size: 13px; font-weight: 500;">{{ hdfc_highest }}</td>
+<td align="right">
+<span style="background-color: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase;">Debit</span>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+<!-- {{ icici_name }} -->
+<table border="0" cellpadding="0" cellspacing="0" style="border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;" width="100%">
+<tbody><tr>
+<td bgcolor="#fff7ed" style="padding: 16px 24px; border-bottom: 1px solid #ffedd5;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td width="40">
+<div style="width: 32px; height: 32px; background-color: #ea580c; border-radius: 4px; text-align: center; line-height: 32px; color: #ffffff; font-weight: bold; font-size: 14px;">I</div>
+</td>
+<td style="padding-left: 8px; color: #7c2d12; font-size: 16px; font-weight: bold;">{{ icici_name }}</td>
+<td align="right">
+<span style="background-color: #ffedd5; color: #9a3412; padding: 4px 8px; border-radius: 4px; font-size: 10px; font-family: 'Courier New', Courier, monospace;">**** 1100</span>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<tr>
+<td style="padding: 24px;">
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr style="color: #94a3b8; font-size: 9px; font-weight: bold; text-transform: uppercase;">
+<td style="padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">Category</td>
+<td align="right" style="padding-bottom: 12px; border-bottom: 1px solid #f1f5f9;">Amount</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Current Balance</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; font-weight: bold; border-bottom: 1px solid #f8fafc; color: #9a3412;">{{ icici_balance }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Monthly Spends</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #dc2626;">{{ icici_spends }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">Salary Credit</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; border-bottom: 1px solid #f8fafc; color: #334155;">{{ icici_salary }}</td>
+</tr>
+<tr>
+<td style="padding: 12px 0; font-size: 14px; color: #334155;">Passive Income</td>
+<td align="right" style="padding: 12px 0; font-size: 14px; color: #10b981;">{{ icici_passive }}</td>
+</tr>
+</tbody></table>
+<table border="0" cellpadding="0" cellspacing="0" style="margin-top: 20px; border: 2px dashed #fed7aa; background-color: #fff7ed; border-radius: 8px;" width="100%">
+<tbody><tr>
+<td style="padding: 12px;">
+<p style="margin: 0 0 4px 0; color: #f97316; font-size: 9px; font-weight: bold; text-transform: uppercase;">Highest Transaction</p>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td style="color: #7c2d12; font-size: 13px; font-weight: 500;">{{ icici_highest }}</td>
+<td align="right">
+<span style="background-color: #f1f5f9; color: #475569; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: bold; text-transform: uppercase;">Transfer</span>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+<!-- Footer / Spacer -->
+<tr>
+<td style="padding-bottom: 32px;"></td>
+</tr>
+</tbody></table>
+<!-- Simple Email Footer -->
+<table border="0" cellpadding="0" cellspacing="0" width="600">
+<tbody><tr>
+<td align="center" style="padding: 24px; color: #94a3b8; font-size: 12px;">
+                            © 2026 Shubham Insights. This is an automated monthly summary.
+                        </td>
+</tr>
+</tbody></table>
+</td>
+</tr>
+</tbody></table>
+</body></html>
