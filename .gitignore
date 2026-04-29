@@ -1,0 +1,34 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual env
+venv/
+.env/
+
+# Env files (VERY IMPORTANT)
+env.txt
+
+# Logs
+*.log
+
+# OS files
+.DS_Store
+
+# Docker
+*.tar
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary files
+/tmp/
+
+# PDF / generated files
+*.pdf
+
+# Git
+.git/
