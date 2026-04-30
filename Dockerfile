@@ -12,8 +12,8 @@ RUN pip install -r requirements.txt
 # code
 COPY lambda_function.py .
 COPY emailtemplate.html .
-COPY services .
-COPY helpers .
+COPY services/ services/
+COPY helpers/ helpers/
 
 # command
 CMD ["lambda_function.lambda_handler"]
