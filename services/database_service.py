@@ -1,5 +1,6 @@
 import os
 import boto3
+from boto3.dynamodb.conditions import Key
 from datetime import datetime
 import calendar
 from dateutil.relativedelta import relativedelta
@@ -39,58 +40,98 @@ def save_transactions_bulk(transactions, bank, user_id=os.environ.get("DEVELOP_B
         print("❌ Bulk Error:", str(e))
 
 
+def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP_BY")):
+    try:
+        metadata_table = dynamodb.Table("period-wise-transaction")
+        metadata_table.put_item(
+            Item={
+                "user": user_id,
+                "file_name": file_name,
+                "data_type": "file_metadata",
+                "period": period + "_" + bank,  # store period with bank to avoid conflicts with period metadata records
+                'bank': bank
+            }
+        )
+    except Exception as e:
+        print("❌ Metadata Save Error:", str(e))
+
+
+
 
 # function to save period-wise summary data in DynamoDB (for SES reporting)
 def save_period_data(user, template_data):
-    dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
-    table = dynamodb.Table('period-wise-transaction')
+    try:
+        dynamodb = boto3.resource('dynamodb', region_name='ap-south-1')
+        table = dynamodb.Table('period-wise-transaction')
 
-     # extract "Apr 2026"
-    month_str = template_data["period"].split("-")[0].strip()[3:]   # "Apr 2026"
-    current_date = datetime.strptime(month_str, "%b %Y")
+        # extract "Apr 2026"
+        month_str = template_data["period"].split("-")[0].strip()[3:]   # "Apr 2026"
+        current_date = datetime.strptime(month_str, "%b %Y")
 
-    prev_date = current_date - relativedelta(months=1)
+        prev_date = current_date - relativedelta(months=1)
 
-    current_month = current_date.strftime("%b %Y")   # Apr 2026
-    prev_month = prev_date.strftime("%b %Y")         # Mar 2026
+        current_month = current_date.strftime("%b")   # Apr 2026
+        prev_month = prev_date.strftime("%b %Y")         # Mar 2026
 
-    response = table.scan()
+        prefix = f"01 {current_month}"   # "01 Apr", "01 Mar"
+        response_item = table.query(
+            KeyConditionExpression=(
+                Key("user").eq(user) &
+                Key("period").begins_with(prefix)
+            )
+        )
+        items = response_item.get("Items", [])
+        
+        with table.batch_writer() as batch:
+            for item in items:
+                batch.delete_item(
+                    Key={
+                        "user": item["user"],
+                        "period": item["period"]
+                    }
+                )
 
-    prev_items = [
-        item for item in response.get("Items", [])
-        if prev_month in item.get("period", "")
-    ]
+        response = table.scan()
 
-    prev_item = prev_items[0] if prev_items else None
-    item = {
-        "user": user,
-        "period": template_data["period"],
-        "passive_change": calc_percentage_change( clean_amount(template_data["total_passive"]), clean_amount(prev_item['total_passive']) if prev_item else 0.0),  # example change calculation
-        "spend_change": calc_percentage_change(clean_amount(template_data["total_spends"]), clean_amount(prev_item['total_spends']) if prev_item else 0.0),  # example change calculation
-        "hdfc_name": template_data["hdfc_name"],
-        "hdfc_balance": template_data["hdfc_balance"],
-        "hdfc_salary": template_data["hdfc_salary"],
-        "hdfc_passive": template_data["hdfc_passive"],
-        "hdfc_spends": template_data["hdfc_spends"],
-        "hdfc_highest": template_data["hdfc_highest"],
+        prev_items = [
+            item for item in response.get("Items", [])
+            if prev_month in item.get("period", "")
+        ]
 
-        "icici_name": template_data["icici_name"],
-        "icici_balance": template_data["icici_balance"],
-        "icici_salary": template_data["icici_salary"],
-        "icici_passive": template_data["icici_passive"],
-        "icici_spends": template_data["icici_spends"],
-        "icici_highest": template_data["icici_highest"],
+        prev_item = prev_items[0] if prev_items else None
+        item = {
+            "user": user,
+            "period": template_data["period"],
+            "passive_change": calc_percentage_change( clean_amount(template_data["total_passive"]), clean_amount(prev_item.get('total_passive', 0)) if prev_item else 0.0),  # example change calculation
+            "spend_change": calc_percentage_change(clean_amount(template_data["total_spends"]), clean_amount(prev_item.get('total_spends', 0)) if prev_item else 0.0),  # example change calculation
+            "hdfc_name": template_data["hdfc_name"],
+            "hdfc_balance": template_data["hdfc_balance"],
+            "hdfc_salary": template_data["hdfc_salary"],
+            "hdfc_passive": template_data["hdfc_passive"],
+            "hdfc_spends": template_data["hdfc_spends"],
+            "hdfc_highest": template_data["hdfc_highest"],
+            "is_bank_one_present": template_data["is_bank_one_present"],
+            "is_bank_two_present": template_data["is_bank_two_present"],
+            "icici_name": template_data["icici_name"],
+            "icici_balance": template_data["icici_balance"],
+            "icici_salary": template_data["icici_salary"],
+            "icici_passive": template_data["icici_passive"],
+            "icici_spends": template_data["icici_spends"],
+            "icici_highest": template_data["icici_highest"],
+            "data_type": "period_metadata",
+            "total_balance": template_data["total_balance"],
+            "total_income": template_data["total_income"],
+            "total_passive": template_data["total_passive"],
+            "total_spends": template_data["total_spends"],
+            "net_savings": template_data["net_savings"]
+        }
 
-        "total_balance": template_data["total_balance"],
-        "total_income": template_data["total_income"],
-        "total_passive": template_data["total_passive"],
-        "total_spends": template_data["total_spends"],
-        "net_savings": template_data["net_savings"]
-    }
+        table.put_item(Item=item)
+    except Exception as e:
+        print("❌ Period Data Save Error:", str(e))
 
-    table.put_item(Item=item)
 
-  #  print("✅ Saved:",template_data["period"])
+  ##print("✅ Saved:",template_data["period"])
 
   
 # function to get unique monthly periods from transaction dates (for SES reporting)
@@ -116,11 +157,12 @@ def get_monthly_periods():
     if not dates:
         return []
 
-    start_date = min(dates)
+    # ✅ FIXED START DATE
+    start_date = datetime(2026, 1, 1)
     end_date = max(dates)
 
     periods = []
-    current = start_date.replace(day=1)
+    current = start_date
 
     while current <= end_date:
         year = current.year
@@ -171,7 +213,7 @@ def get_items_for_period(start, end):
                     items.append(item)
 
             except Exception as e:
-                print("Error:", item.get('date'), e)
+              print("Error:", item.get('date'), e)
 
         if 'LastEvaluatedKey' in response:
             response = table.scan(

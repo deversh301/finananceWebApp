@@ -12,7 +12,7 @@ from jinja2 import Template
 from services.database_service import (
     get_monthly_periods, save_period_data, get_items_for_period
 )
-from helpers.helper import ( get_list_env, parse_number)
+from helpers.helper import ( get_list_env, prepare_record, build_month_status, parse_number)
 
 
 def gmail_send_email():
@@ -30,10 +30,12 @@ def gmail_send_email():
         )
 
         items = response.get("Items", [])
-        # print(items)
+        data = items[0] if items else {}
+        month_status = build_month_status(items)
+        data["month_status"] = month_status
 
         # 🎯 Render HTML
-        html_content = template.render(**items[0]) if items else "<h1>No data available for this month</h1>"
+        html_content = template.render(**data) if data else "<h1>No data available for this month</h1>"
 
         # 📧 Email config
         sender_email = os.environ.get("FROM_EMAIL")  # use environment variable for security
@@ -125,12 +127,8 @@ def make_ses_data(items, period):
         include_passive = get_list_env("INCLUDE_PASSIVE")
         exclude_passive = get_list_env("EXCLUDE_PASSIVE")
         exclude_withdrawal = get_list_env("EXCLUDE_WITHDRAWAL")
-        print("✅ Classification Keywords Loaded:")
-        print("Salary Keywords:", keywords_salary)
-        print("Include in Passive:", include_passive)   
-        print("Exclude from Passive:", exclude_passive)
-        print("Exclude from Withdrawal (Self Deposit):", exclude_withdrawal)
-        # print("📊 Raw Data from DynamoDB:", items)
+        # prepare SES record based on transactions (which banks are present)
+      #print("📊 Raw Data from DynamoDB:", items , period)
         for item in items:
             bank = item.get('bank')
             date_str = item.get('date')
@@ -153,19 +151,19 @@ def make_ses_data(items, period):
                 latest_balance[bank]["date"] = date_obj
                 latest_balance[bank]["balance"] = balance
 
-          #  print("📊 Raw Data from DynamoDB:", item)
+          ##print("📊 Raw Data from DynamoDB:", item)
             deposit = parse_number(item.get('deposit'))
             withdrawal = parse_number(item.get('withdrawal'))
             balance = parse_number(item.get('balance'))
             particulars = item.get('particulars', '').lower()
-            print(f"Processing particulars: {particulars} with deposit: {deposit} and withdrawal: {withdrawal}")
+          #print(f"Processing particulars: {particulars} with deposit: {deposit} and withdrawal: {withdrawal}")
             if deposit > 0:
                     # ✅ total deposit
                 data[bank]["total_deposit"] += deposit
 
                 # ✅ salary
                 if any(k in particulars for k in keywords_salary):
-                    print(f"Identified salary: {date_str}", deposit)
+                  #print(f"Identified salary: {date_str}", deposit)
                     data[bank]["salary"] += deposit
 
                 # ✅ passive income (dividend / interest / achc)
@@ -175,7 +173,7 @@ def make_ses_data(items, period):
 
                 # ✅ self transfer (own money movement)
                 elif any(k in particulars for k in exclude_passive):
-                    print(f"Identified self transfer: {date_str}", deposit)
+                  #print(f"Identified self transfer: {date_str}", deposit)
                     data[bank]["self_transfer"] += deposit
 
                 # ✅ fallback (unknown deposit)
@@ -204,14 +202,14 @@ def make_ses_data(items, period):
             "period": period,
             "passive_change": "+14%", # future me calculate karega
             "spend_change": "+14%",  # future me calculate karega
-
             "hdfc_name": "HDFC Bank",
             "hdfc_balance": f"₹{int(latest_balance['hdfc']['balance'])}",
             "hdfc_salary": f"₹{int(data['hdfc']['salary'])}",
             "hdfc_passive": f"₹{int(data['hdfc']['passive'])}",  # future logic
             "hdfc_spends": f"₹{int(data['hdfc']['spends'])}",
             "hdfc_highest": highest_spend["hdfc"]["name"],
-
+            "is_bank_one_present": prepare_record(items)['bank1'],  # prepare SES record based on transactions (which banks are present)
+            "is_bank_two_present": prepare_record(items)['bank2'],  # prepare SES record based on transactions (which banks are present)
             "icici_name": "ICICI Bank",
             "icici_balance": f"₹{int(latest_balance['icici']['balance'])}",
             "icici_salary": f"₹{int(data['icici']['salary'])}",
@@ -243,9 +241,10 @@ def ses_template_data_prep():
             # print(f"Processing period: {period}")
             start, end = period.split(" - ")
             items = get_items_for_period(start, end)
+          #print(f"Transactions for {period}:", items)
             # print(f"Items for {period}:", items)
             template_data = make_ses_data(items, period)
-          #print(f"Template data for {period}:", template_data)
+            print(f"Template data for {period}:", template_data)
             save_period_data(os.environ.get("DEVELOP_BY"), template_data)
         
     except Exception as e:
