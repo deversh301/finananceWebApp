@@ -9,7 +9,7 @@ from googleapiclient.discovery import build
 from decimal import Decimal
 from collections import defaultdict
 import boto3
-from boto3.dynamodb.conditions import Attr
+from boto3.dynamodb.conditions import Key, Attr
 import uuid
 from datetime import datetime
 import hashlib
@@ -119,3 +119,128 @@ def get_list_env(key):
         return [k.lower() for k in json.loads(os.environ.get(key, "[]"))]
     except:
         return []
+
+# helper to prepare record for SES template data based on transactions (which banks are present)
+def prepare_record(transactions):
+    banks = set(txn["bank"] for txn in transactions)
+
+    return {
+        "bank1": 1 if "hdfc" in banks else 0,
+        "bank2": 1 if "icici" in banks else 0
+    }
+
+# helper to generate HTML for month-wise status in email
+def generate_month_html(status_dict):
+    html = ""
+
+    for (year, month), status in status_dict.items():
+        month_name = calendar.month_abbr[month]
+
+        if status:
+            icon = "✔️"
+            color = "#28a745"
+        else:
+            icon = "❌"
+            color = "#ff4d4f"
+
+        html += f'''
+        <td style="font-size: 12px; color: #334155; font-weight: 500;">
+            {month_name} <span style="color: {color}; margin-left: 4px;">{icon}</span>
+        </td>
+        '''
+
+    return html
+
+
+
+def get_last_4_months():
+    months = []
+    now = datetime.now()
+
+    for i in range(4):
+        m = now.month - i
+        y = now.year
+
+        if m <= 0:
+            m += 12
+            y -= 1
+
+        months.append((y, m))
+
+    return list(reversed(months))
+
+
+def extract_key(period):
+    # Example input: "01 Apr 2026 - 30 Apr 2026"
+    start_date = period.split(" - ")[0]
+    dt = datetime.strptime(start_date, "%d %b %Y")
+    return f"{dt.year}-{str(dt.month).zfill(2)}"
+
+
+def get_item_by_month(table, user_id, month_str):
+  #print(f"🔹 Querying for user: {user_id}, month: {month_str}")
+    prefix = f"01 {month_str}"   # "01 Apr", "01 Mar"
+    response = table.query(
+        KeyConditionExpression=(
+            Key("user").eq(user_id) &
+            Key("period").begins_with(prefix)
+        )
+    )
+
+    items = response.get("Items", [])
+    return items[0] if items else None
+
+def build_month_status(items):
+    data_map = {extract_key(item["period"]): item for item in items}
+  #print("🔹 Data Map Keys:", data_map.keys())
+
+    result = []
+    dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+    table = dynamodb.Table("period-wise-transaction")
+
+
+    for y, m in get_last_4_months():
+        key = f"{y}-{str(m).zfill(2)}"
+        month_str = calendar.month_abbr[m]  # "Apr", "Mar"
+        item = get_item_by_month(table, os.environ.get("DEVELOP_BY"), month_str)
+      #print("🔹 Checking period:")
+      #print(item)
+        if item:
+            bank1 = int(item.get("is_bank_one_present", 0))
+            bank2 = int(item.get("is_bank_two_present", 0))
+          #print("🔹 Checking:", key, bank1, bank2)
+            status = bank1 == 1 and bank2 == 1
+        else:
+          #print("🔹 No data for:", key)
+            status = False
+
+        result.append({
+            "month": calendar.month_abbr[m],
+            "status": status
+        })
+
+    return result
+
+def build_period_from_transactions(data):
+    if not data:
+        return None
+
+    dates = []
+
+    for item in data:
+        date_str = item.get("date")
+        if date_str:
+            dt = datetime.strptime(date_str, "%d-%m-%Y")
+            dates.append(dt)
+
+    if not dates:
+        return None
+
+    start_date = min(dates)
+    end_date = max(dates)
+
+    # format like: 01 Feb 2026
+    start_str = start_date.strftime("%d %b %Y")
+    end_str = end_date.strftime("%d %b %Y")
+
+    return f"{start_str} - {end_str}"

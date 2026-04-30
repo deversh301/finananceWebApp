@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+import boto3
 from services.google_drive_service import (
     decrypt_pdf,
     get_all_pdfs,
@@ -8,10 +9,12 @@ from services.google_drive_service import (
     download_file
 )
 from services.database_service import (
-    save_transactions_bulk
+    save_transactions_bulk,
+    save_file_metadata
 )
 from helpers.helper import ( 
     clean_particulars,
+    build_period_from_transactions,
     get_file_password
     )
 
@@ -205,6 +208,8 @@ def download_and_decrypt_pdf():
        #👉 get PDF
         pdf_files = get_all_pdfs()
       #print("📄 Found PDFs:", pdf_files)
+        Dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = Dynamodb.Table("period-wise-transaction")
 
         for pdf in pdf_files:
             try:
@@ -231,6 +236,22 @@ def download_and_decrypt_pdf():
                   #print("📊 Parsing with Generic logic")
                     bank = "icici"
                     json_output = parse_bank_statement(text_data)
+              #print(f"✅ Parsed {build_period_from_transactions(json_output)} transactions for {file_name} - bank: {bank}")
+
+                period = build_period_from_transactions(json_output)   # ya jo bhi tera period logic hai
+                final_period = f"{period}_{bank}"
+                # 🔍 Check if exists
+                response = table.get_item(
+                    Key={
+                        "user": os.environ.get("DEVELOP_BY"),
+                        "period": final_period
+                    }
+                )
+
+                if "Item" in response:
+                    print("⏭️ Already exists, skipping:", final_period)
+                    continue  # 🔥 skip to next loop
+                save_file_metadata(build_period_from_transactions(json_output), file_name, bank)
                 save_transactions_bulk(json_output, bank)
               #print("✅ Finished Decryption Only Flow")
             finally:
