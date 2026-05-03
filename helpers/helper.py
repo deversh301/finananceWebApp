@@ -244,3 +244,10 @@ def build_period_from_transactions(data):
     end_str = end_date.strftime("%d %b %Y")
 
     return f"{start_str} - {end_str}"
+
+# Helper to convert Decimal to int/float
+def decimal_default(obj):
+    if isinstance(obj, Decimal):
+        # Convert to int if no decimal point, else float
+        return int(obj) if obj % 1 == 0 else float(obj)
+    raise TypeError
