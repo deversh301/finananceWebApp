@@ -2,10 +2,13 @@ import json
 import os
 import urllib.request
 import pikepdf
+import boto3
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 
 FOLDER_ID = os.environ.get("FOLDER_ID")
+s3 = boto3.client('s3')
+BUCKET_NAME = os.environ.get("S3_BUCKET_NAME")
 
 # Google Drive से credentials fetch करने का function
 def get_credentials():
@@ -36,6 +39,26 @@ def download_file(file_id, filename):
 
     return filepath
 
+
+def download_s3_file(file_id, filename):
+    """
+    file_id: This is now the S3 Key (e.g., 'user-123/statement.pdf')
+    filename: The local name to save as in /tmp
+    """
+    # Lambda allows writing files only to the /tmp directory
+    filepath = f"/tmp/{filename}"
+    try:
+        print(f"Downloading {file_id} from {BUCKET_NAME}...")
+        
+        # Download the object directly to the /tmp path
+        s3.download_file(BUCKET_NAME, file_id, filepath)
+        
+        print(f"File saved to: {filepath}")
+        return filepath
+
+    except Exception as e:
+        print(f"Error downloading from S3: {str(e)}")
+        raise e
 
 # Cleanup API hit karne ka function (agar future me koi cleanup API call karna ho to)
 def clean_endpoint():
@@ -75,9 +98,56 @@ def get_all_pdfs():
     files = results.get("files", [])
 
     if not files:
-        raise Exception("No PDF found in folder ❌")
+        raise Exception("No PDF found in folders ❌")
 
     return files
+
+def get_all_s3_pdfs():
+    # Ensure the prefix ends with a slash if it's a folder
+    FOLDER_PREFIX = "user-123/" 
+    print(f"🚀 Starting S3 PDF fetch with Bucket: {BUCKET_NAME} and Prefix: {FOLDER_PREFIX}")
+    # 2. Check if BUCKET_NAME is still None (safety check)
+    if not BUCKET_NAME:
+        raise Exception("CONFIG ERROR: S3_BUCKET_NAME environment variable is not set!")
+    
+    try:
+        print(f"Searching in Bucket: {BUCKET_NAME} with Prefix: {FOLDER_PREFIX}")
+        
+        response = s3.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=FOLDER_PREFIX
+        )
+
+        # 2. Extract contents
+        s3_files = response.get('Contents', [])
+        
+        # DEBUG: See exactly what keys were found
+        print(f"Raw S3 Response 'Contents': {s3_files}")
+
+        if not s3_files:
+            # This happens if the folder is empty or bucket name is wrong
+            raise Exception("No objects found in the specified S3 path ❌")
+
+        formatted_files = []
+        for obj in s3_files:
+            key = obj['Key']
+            
+            # 3. Filter: Ignore the folder placeholder itself and non-PDFs
+            if key.lower().endswith('.pdf'):
+                formatted_files.append({
+                    "id": key,
+                    "name": key.split('/')[-1]
+                })
+
+        if not formatted_files:
+            raise Exception("No PDF files found in folder ❌")
+
+        return formatted_files
+
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        raise e
+
 
 # API hit करने का function (agar future me koi API call karna ho to)
 def hit_endpoint():

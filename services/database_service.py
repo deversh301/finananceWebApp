@@ -1,6 +1,6 @@
 import os
 import boto3
-from boto3.dynamodb.conditions import Key
+from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime
 import calendar
 from dateutil.relativedelta import relativedelta
@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 from helpers.helper import ( 
     generate_txn_id,
     calc_percentage_change,
+    build_month_status,
     clean_amount,
     to_decimal)
 
@@ -223,3 +224,24 @@ def get_items_for_period(start, end):
             break
 
     return items
+
+
+def fetch_period_metadata():
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = dynamodb.Table('period-wise-transaction')
+
+        current_month = datetime.now().strftime("%b")  # Apr
+
+        response = table.scan(
+            FilterExpression=Attr("period").contains(current_month)
+        )
+
+        items = response.get("Items", [])
+        data = items[0] if items else {}
+        month_status = build_month_status(items)
+        data["month_status"] = month_status
+        return data
+    except Exception as e:
+        print("❌ Fetch Metadata Error:", str(e))
+        return {}

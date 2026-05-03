@@ -5,6 +5,8 @@ import boto3
 from services.google_drive_service import (
     decrypt_pdf,
     get_all_pdfs,
+    get_all_s3_pdfs,
+    download_s3_file,
     read_drive_files,
     download_file
 )
@@ -206,8 +208,8 @@ def parse_hdfc_text(text):
 def download_and_decrypt_pdf():
     try:
        #👉 get PDF
-        pdf_files = get_all_pdfs()
-      #print("📄 Found PDFs:", pdf_files)
+        # pdf_files = get_all_pdfs()
+        pdf_files = get_all_s3_pdfs()
         Dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
         table = Dynamodb.Table("period-wise-transaction")
 
@@ -219,7 +221,7 @@ def download_and_decrypt_pdf():
               #print(f"📄 Processing: {file_name}")
 
                 # 👉 download
-                input_path = download_file(file_id, "input.pdf")
+                input_path = download_s3_file(file_id, "input.pdf")
 
                 output_path = f"/tmp/decrypted.pdf"
 
