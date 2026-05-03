@@ -84,6 +84,16 @@ docker run --env-file env.txt -p 9000:8080 drive-lambda
 
 ---
 
+
+### 4.1 Container ko local mai real time changes k sath run karo
+
+```
+docker run --env-file env.txt -p 9000:8080 -v ${PWD}:/var/task drive-lambda
+```
+
+---
+
+
 ### 5. Endpoint hit karo
 
 PowerShell se ye command run karo:
