@@ -1,4 +1,5 @@
 import json
+from decimal import Decimal
 from services.google_drive_service import (
     hit_endpoint,
     clean_endpoint
@@ -14,6 +15,11 @@ from services.email_service import (
 from services.database_service import (
     fetch_period_metadata
 )
+
+from helpers.helper import (
+    decimal_default
+)
+
 
 
 # main Lambda handler function to orchestrate the entire workflow
@@ -34,7 +40,7 @@ def lambda_handler(event, context):
             "body": json.dumps({
                 "message": "Workflow completed successfully",
                 "data": data
-            })
+            }, default=decimal_default) # Add 'default' here
         }
 
     except Exception as e:
