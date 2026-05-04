@@ -25,23 +25,30 @@ from helpers.helper import (
 # main Lambda handler function to orchestrate the entire workflow
 def lambda_handler(event, context):
     try:
-      #print("🚀 Start Decryption Only Flow")
+        action = event.get("queryStringParameters", {}).get("action")
+        #print("🚀 Start Decryption Only Flow")
         # step 1: hit endpoint to trigger the flow for downloading the pdf in google drive
         # hit_endpoint()
         # step 2: get PDF from drive and decrypt and store it in tmp folder and insert data in dynomo db transactions table
         download_and_decrypt_pdf()
-        # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
+        # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
         ses_template_data_prep()
         # step 4: send email using SES with the prepared template data
         # gmail_send_email()
-        data = fetch_period_metadata()
-        return {
-            "statusCode": 200,
-            "body": json.dumps({
-                "message": "Workflow completed successfully",
-                "data": data
-            }, default=decimal_default) # Add 'default' here
-        }
+
+        if action == "fetchdata":
+            data = fetch_period_metadata()
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Data fetched successfully",
+                    "data": data
+                }, default=decimal_default) # Add 'default' here
+            }
+        
+        else:
+            return { "statusCode": 200, "body": "workflow logic" };
+       
 
     except Exception as e:
         print("❌ Error:", str(e))
