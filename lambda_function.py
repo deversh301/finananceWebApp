@@ -25,6 +25,7 @@ from helpers.helper import (
 # main Lambda handler function to orchestrate the entire workflow
 def lambda_handler(event, context):
     try:
+        print("🚀 Lambda function started with event:", event)
         action = event.get("queryStringParameters", {}).get("action")
         if action == "fetchdata":
             data = fetch_period_metadata()
