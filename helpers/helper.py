@@ -65,13 +65,13 @@ def get_file_password(file_name):
         return None
 
 # function to get password from array using filename
-def get_file_password_from_array(files_array, file_name):
+def get_file_password_from_array(files_array, file_name, key="password"):
     try:
 
         for file in files_array:
 
             if file.get("filename") == file_name:
-                return file.get("password")
+                return file.get(key)
 
         return None
 
