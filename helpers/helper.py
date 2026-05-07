@@ -64,6 +64,22 @@ def get_file_password(file_name):
         print("❌ Password Extraction Error:", str(e))
         return None
 
+# function to get password from array using filename
+def get_file_password_from_array(files_array, file_name):
+    try:
+
+        for file in files_array:
+
+            if file.get("filename") == file_name:
+                return file.get("password")
+
+        return None
+
+    except Exception as e:
+        print("❌ Password Extraction Error:", str(e))
+        return None
+
+
 # helper to calculate percentage change between two values (for SES reporting)
 def calc_percentage_change(current, previous):
     if previous == 0:

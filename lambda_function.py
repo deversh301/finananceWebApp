@@ -37,11 +37,13 @@ def lambda_handler(event, context):
                 }, default=decimal_default) # Add 'default' here
             }
         else:
+            body = json.loads(event.get("body", "{}"))
+            print("Received body:", body["banks"])
             #print("🚀 Start Decryption Only Flow")
             # step 1: hit endpoint to trigger the flow for downloading the pdf in google drive
             # hit_endpoint()
             # step 2: get PDF from drive and decrypt and store it in tmp folder and insert data in dynomo db transactions table
-            download_and_decrypt_pdf()
+            download_and_decrypt_pdf(body["banks"])
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
             ses_template_data_prep()
             # step 4: send email using SES with the prepared template data

@@ -17,7 +17,7 @@ from services.database_service import (
 from helpers.helper import ( 
     clean_particulars,
     build_period_from_transactions,
-    get_file_password
+    get_file_password_from_array
     )
 
 
@@ -205,7 +205,7 @@ def parse_hdfc_text(text):
 
 
 # Main function to orchestrate the flow: download, decrypt, read, parse, and save
-def download_and_decrypt_pdf():
+def download_and_decrypt_pdf(banks):    
     try:
        #👉 get PDF
         # pdf_files = get_all_pdfs()
@@ -225,7 +225,7 @@ def download_and_decrypt_pdf():
 
                 output_path = f"/tmp/decrypted.pdf"
 
-                decrypt_pdf(input_path, output_path, get_file_password(file_name))
+                decrypt_pdf(input_path, output_path, get_file_password_from_array(banks, file_name))
                 # print("✅ Decrypted file saved at:", output_path)
                 text_data = read_drive_files()
                 # Example usage:
