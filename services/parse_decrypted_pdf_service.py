@@ -229,14 +229,13 @@ def download_and_decrypt_pdf(banks):
                 # print("✅ Decrypted file saved at:", output_path)
                 text_data = read_drive_files()
                 # Example usage:
-              #print("📊 Extracted Text Data:\n", text_data)  # print first 500 chars
-                if file_name.startswith("Account") and file_name.endswith(".pdf"):
+                #print("📊 Extracted Text Data:\n", text_data)  # print first 500 chars
+                bank = get_file_password_from_array(banks, file_name , 'bankName' )
+                if bank == "hdfc":
                     # print("📊 Parsing with HDFC logic")
-                    bank = "hdfc"
                     json_output = parse_hdfc_text(text_data)
                 else:
-                  #print("📊 Parsing with Generic logic")
-                    bank = "icici"
+                    #print("📊 Parsing with Generic logic")
                     json_output = parse_bank_statement(text_data)
               #print(f"✅ Parsed {build_period_from_transactions(json_output)} transactions for {file_name} - bank: {bank}")
 
