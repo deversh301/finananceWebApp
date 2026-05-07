@@ -13,7 +13,8 @@ from services.email_service import (
 )
 
 from services.database_service import (
-    fetch_period_metadata
+    fetch_period_metadata,
+    save_bankpwd_metadata
 )
 
 from helpers.helper import (
@@ -27,7 +28,18 @@ def lambda_handler(event, context):
     try:
         print("🚀 Lambda function started with event:", event)
         action = event.get("queryStringParameters", {}).get("action")
-        if action == "fetchdata":
+        body = json.loads(event.get("body", "{}"))
+        path = event["path"]
+        method = event["httpMethod"]
+        if path == "/bank-passwords" and method == "POST":
+            save_bankpwd_metadata(body)
+            return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Hello API"
+                })
+            }
+        elif action == "fetchdata":
             data = fetch_period_metadata()
             return {
                 "statusCode": 200,
@@ -37,7 +49,6 @@ def lambda_handler(event, context):
                 }, default=decimal_default) # Add 'default' here
             }
         else:
-            body = json.loads(event.get("body", "{}"))
             print("Received body:", body["banks"])
             #print("🚀 Start Decryption Only Flow")
             # step 1: hit endpoint to trigger the flow for downloading the pdf in google drive

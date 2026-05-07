@@ -59,6 +59,25 @@ def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP
 
 
 
+def save_bankpwd_metadata(payload , user_id=os.environ.get("DEVELOP_BY")):
+    try:
+        metadata_table = dynamodb.Table("period-wise-transaction")
+        metadata_table.put_item(
+            Item={
+                "user": user_id,
+                "title": payload['title'],
+                "bank_password": payload['password'],
+                'bank': payload['bank'],
+                "data_type": "password_metadata",
+                "period":  payload['title'] + "_" + payload['bank'],  # store period with bank to avoid conflicts with period metadata records
+            }
+        )
+    except Exception as e:
+        print("❌ Metadata Save Error save_bankpwd_metadata:", str(e))
+
+
+
+
 # function to save period-wise summary data in DynamoDB (for SES reporting)
 def save_period_data(user, template_data):
     try:
