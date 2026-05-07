@@ -28,10 +28,10 @@ def lambda_handler(event, context):
     try:
         print("🚀 Lambda function started with event:", event)
         action = event.get("queryStringParameters", {}).get("action")
-        body = json.loads(event.get("body", "{}"))
         path = event["path"]
         method = event["httpMethod"]
         if path == "/bank-passwords" and method == "POST":
+            body = json.loads(event.get("body", "{}"))
             save_bankpwd_metadata(body)
             return {
                 "statusCode": 200,
@@ -49,12 +49,13 @@ def lambda_handler(event, context):
                 }, default=decimal_default) # Add 'default' here
             }
         else:
-            print("Received body:", body["banks"])
+            body = json.loads(event.get("body", "{}"))
+            banks = body.get("banks", [])
             #print("🚀 Start Decryption Only Flow")
             # step 1: hit endpoint to trigger the flow for downloading the pdf in google drive
             # hit_endpoint()
             # step 2: get PDF from drive and decrypt and store it in tmp folder and insert data in dynomo db transactions table
-            download_and_decrypt_pdf(body["banks"])
+            download_and_decrypt_pdf(banks)
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
             ses_template_data_prep()
             # step 4: send email using SES with the prepared template data
