@@ -69,10 +69,11 @@ def get_file_password_from_array(files_array, file_name, key="password"):
     try:
 
         for file in files_array:
-
+            print(f"🔹 Checking file: {file.get('filename')}, looking for: {file_name}")
             if file.get("filename") == file_name:
+                print(f"✅ Match found! Returning password: {file.get(key)}")
                 return file.get(key)
-
+        print("⚠️ No matching file found for password retrieval.")
         return None
 
     except Exception as e:
