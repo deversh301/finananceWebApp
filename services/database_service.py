@@ -293,7 +293,9 @@ def fetch_period_metadata():
         current_month = datetime.now().strftime("%b")  # Apr
 
         response = table.scan(
-            FilterExpression=Attr("period").contains(current_month)
+            FilterExpression=
+                Attr("period").contains(current_month) &
+                Attr("data_type").eq("period_metadata")
         )
 
         items = response.get("Items", [])
