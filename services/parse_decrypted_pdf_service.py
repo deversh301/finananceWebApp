@@ -258,7 +258,6 @@ def download_and_decrypt_pdf(banks):
                 save_file_metadata(build_period_from_transactions(json_output), file_name, bank)
                 save_transactions_bulk(json_output, bank)
               #print("✅ Finished Decryption Only Flow")
-                return True
             finally:
                 # 🧹 cleanup (har baar chalega even if error aaye)
                 for f in ["/tmp/input.pdf", "/tmp/decrypted.pdf"]:
