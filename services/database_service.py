@@ -68,10 +68,10 @@ def fetch_bankpwd_metadata(user_id):
         )
 
         items = response.get("Items", [])
-        return items[0] if items else {}
+        return items
     except Exception as e:
         print("❌ Fetch Metadata Error fetch_bankpwd_metadata:", str(e))
-        return {}
+        return []
 
 
 def save_bankpwd_metadata(payload , user_id=os.environ.get("DEVELOP_BY")):
