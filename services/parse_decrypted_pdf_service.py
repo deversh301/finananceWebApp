@@ -219,12 +219,13 @@ def download_and_decrypt_pdf(banks):
                 file_id = pdf["id"]
                 file_name = pdf["name"]
 
-              #print(f"📄 Processing: {file_name}")
+                print(f"📄 Processing: {file_name}")
 
                 # 👉 download
                 input_path = download_s3_file(file_id, "input.pdf")
 
                 output_path = f"/tmp/decrypted.pdf"
+                print("banks array:", banks)
                 #check if file is encrypted by trying to read it without decryption
                 decrypt_pdf(input_path, output_path, get_file_password_from_array(banks, file_name))
                 # print("✅ Decrypted file saved at:", output_path)
