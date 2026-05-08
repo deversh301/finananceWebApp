@@ -8,6 +8,7 @@ from services.google_drive_service import (
     get_all_s3_pdfs,
     download_s3_file,
     read_drive_files,
+    clean_s3_folder,
     download_file
 )
 from services.database_service import (
@@ -264,5 +265,7 @@ def download_and_decrypt_pdf(banks):
                         print(f"🧹 Deleted: {f}")
         
     except Exception as e:
+        folder_prefix = "user-123/" # to_do - make it dynamic based on user or period if needed
+        clean_s3_folder(folder_prefix)  # 🔥 cleanup S3 bucket after processing
         print("❌ Error in download_and_decrypt_pdf:", str(e))
         return False
