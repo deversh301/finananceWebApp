@@ -43,6 +43,7 @@ def save_transactions_bulk(transactions, bank, user_id=os.environ.get("DEVELOP_B
 
 def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP_BY")):
     try:
+        print(f"Saving file metadata for period: {period}, file: {file_name}, bank: {bank}")
         metadata_table = dynamodb.Table("period-wise-transaction")
         metadata_table.put_item(
             Item={
@@ -53,6 +54,7 @@ def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP
                 'bank': bank
             }
         )
+        print("✅ File metadata saved successfully")
     except Exception as e:
         print("❌ Metadata Save Error:", str(e))
 

@@ -255,7 +255,7 @@ def download_and_decrypt_pdf(banks):
                     print("⏭️ Already exists, skipping:", final_period)
                     continue  # 🔥 skip to next loop
                 print("✅ New period, saving data for:", final_period)
-                save_file_metadata(build_period_from_transactions(json_output), file_name, bank)
+                save_file_metadata(period, file_name, bank)
                 save_transactions_bulk(json_output, bank)
               #print("✅ Finished Decryption Only Flow")
             finally:
