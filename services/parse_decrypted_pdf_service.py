@@ -213,17 +213,15 @@ def download_and_decrypt_pdf(banks):
         pdf_files = get_all_s3_pdfs()
         Dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
         table = Dynamodb.Table("period-wise-transaction")
+        print(f"🚀 Found {len(pdf_files)} PDF(s) to process")
 
         for pdf in pdf_files:
             try:
                 file_id = pdf["id"]
                 file_name = pdf["name"]
-
                 print(f"📄 Processing: {file_name}")
-
                 # 👉 download
                 input_path = download_s3_file(file_id, "input.pdf")
-
                 output_path = f"/tmp/decrypted.pdf"
                 print("banks array:", banks)
                 #check if file is encrypted by trying to read it without decryption
