@@ -27,7 +27,8 @@ from helpers.helper import (
 def lambda_handler(event, context):
     try:
         print("🚀 Lambda function started with event:", event)
-        action = event.get("queryStringParameters", {}).get("action")
+        query_params = event.get("queryStringParameters") or {}
+        action = query_params.get("action")
         path = event["path"]
         method = event["httpMethod"]
         if path == "/bank-passwords" and method == "POST":
