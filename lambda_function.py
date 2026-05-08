@@ -80,13 +80,16 @@ def lambda_handler(event, context):
             # hit_endpoint()
             # step 2: get PDF from drive and decrypt and store it in tmp folder and insert data in dynomo db transactions table
             res = download_and_decrypt_pdf(banks)
+            print("🚀 Decryption flow result:", res)
             if res == False:
-                return {
+                response = {
                     "statusCode": 500,
                     "body": json.dumps({
                         "message": "Please check your bank password data, it seems some error in decryption step"
                     })
                 }
+                print("❌ Decryption flow failed:", response)
+                return response
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
             ses_template_data_prep()
             # step 4: send email using SES with the prepared template data
