@@ -149,6 +149,62 @@ def get_all_s3_pdfs():
         raise e
 
 
+def clean_s3_folder(folder_prefix):
+    """
+    Delete all files inside an S3 folder/prefix
+    """
+
+    print(f"🧹 Cleaning S3 folder: {folder_prefix}")
+
+    if not BUCKET_NAME:
+        raise Exception("CONFIG ERROR: S3_BUCKET_NAME is not set!")
+
+    try:
+        # Fetch all objects inside folder
+        response = s3.list_objects_v2(
+            Bucket=BUCKET_NAME,
+            Prefix=folder_prefix
+        )
+
+        # No files found
+        if 'Contents' not in response:
+            print("⚠️ No files found in folder")
+            return {
+                "success": True,
+                "message": "Folder already empty"
+            }
+
+        # Prepare delete list
+        objects_to_delete = [
+            {"Key": obj["Key"]}
+            for obj in response["Contents"]
+        ]
+
+        print(f"🗑️ Deleting {len(objects_to_delete)} files...")
+
+        # Delete all objects
+        delete_response = s3.delete_objects(
+            Bucket=BUCKET_NAME,
+            Delete={
+                "Objects": objects_to_delete
+            }
+        )
+
+        print("✅ Folder cleaned successfully")
+
+        return {
+            "success": True,
+            "message": f"Deleted {len(objects_to_delete)} files"
+        }
+
+    except Exception as e:
+        print(f"❌ Error cleaning folder: {str(e)}")
+
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
 # API hit करने का function (agar future me koi API call karna ho to)
 def hit_endpoint():
     try:

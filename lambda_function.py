@@ -3,6 +3,7 @@ from decimal import Decimal
 import os
 from services.google_drive_service import (
     hit_endpoint,
+    clean_s3_folder,
     clean_endpoint
 )
 from services.parse_decrypted_pdf_service import (
@@ -92,6 +93,8 @@ def lambda_handler(event, context):
                 return response
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
             ses_template_data_prep()
+            folder_prefix = "user-123/" # to_do - make it dynamic based on user or period if needed
+            clean_s3_folder(folder_prefix)  # 🔥 cleanup S3 bucket after processing
             # step 4: send email using SES with the prepared template data
             # gmail_send_email()
             return { "statusCode": 200, "body": "workflow logic" };
