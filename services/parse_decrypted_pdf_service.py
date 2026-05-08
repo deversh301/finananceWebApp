@@ -233,13 +233,13 @@ def download_and_decrypt_pdf(banks):
                 #print("📊 Extracted Text Data:\n", text_data)  # print first 500 chars
                 bank = get_file_password_from_array(banks, file_name , 'bankName' )
                 if bank == "hdfc":
-                    # print("📊 Parsing with HDFC logic")
+                    print("📊 Parsing with HDFC logic")
                     json_output = parse_hdfc_text(text_data)
                 else:
-                    #print("📊 Parsing with Generic logic")
+                    print("📊 Parsing with Generic logic")
                     json_output = parse_bank_statement(text_data)
               #print(f"✅ Parsed {build_period_from_transactions(json_output)} transactions for {file_name} - bank: {bank}")
-
+                print(f"✅ Parsed transactions for {file_name} - bank: {bank}")
                 period = build_period_from_transactions(json_output)   # ya jo bhi tera period logic hai
                 final_period = f"{period}_{bank}"
                 # 🔍 Check if exists
@@ -250,9 +250,12 @@ def download_and_decrypt_pdf(banks):
                     }
                 )
 
+                print(f"🔍 Checking existence for period: {final_period}")
+
                 if "Item" in response:
                     print("⏭️ Already exists, skipping:", final_period)
                     continue  # 🔥 skip to next loop
+                print("✅ New period, saving data for:", final_period)
                 save_file_metadata(build_period_from_transactions(json_output), file_name, bank)
                 save_transactions_bulk(json_output, bank)
               #print("✅ Finished Decryption Only Flow")
