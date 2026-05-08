@@ -92,7 +92,7 @@ def lambda_handler(event, context):
                 print("❌ Decryption flow failed:", response)
                 return response
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
-            # ses_template_data_prep()
+            ses_template_data_prep()
             # folder_prefix = "user-123/" # to_do - make it dynamic based on user or period if needed
             # clean_s3_folder(folder_prefix)  # 🔥 cleanup S3 bucket after processing
             # step 4: send email using SES with the prepared template data
