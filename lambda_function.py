@@ -16,6 +16,7 @@ from services.email_service import (
 from services.database_service import (
     fetch_period_metadata,
     fetch_bankpwd_metadata,
+    delete_bankpwd,
     save_bankpwd_metadata
 )
 
@@ -43,6 +44,16 @@ def lambda_handler(event, context):
                         "data": data
                     }, default=decimal_default) # Add 'default' here
                 }
+            elif action == "deletePwd":
+                body = json.loads(event.get("body", "{}"))
+                delete_bankpwd(os.environ.get("DEVELOP_BY"),body)
+                return {
+                    "statusCode": 200,
+                    "body": json.dumps({
+                        "message": "Data deleted successfully"
+                    })
+                }
+
             else:
                 body = json.loads(event.get("body", "{}"))
                 save_bankpwd_metadata(body)

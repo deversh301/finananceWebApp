@@ -72,6 +72,28 @@ def fetch_bankpwd_metadata(user_id):
     except Exception as e:
         print("❌ Fetch Metadata Error fetch_bankpwd_metadata:", str(e))
         return []
+    
+def delete_bankpwd(user_id, payload):
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = dynamodb.Table('period-wise-transaction')
+
+        response = table.query(
+            KeyConditionExpression=Key("user").eq(user_id),
+            FilterExpression=Attr("password").eq(payload.get("password")) & Attr("bank").eq(payload.get("bank")) & Attr("data_type").eq("password_metadata"),
+        )
+
+        items = response.get("Items", [])
+        if items:
+            item = items[0]
+            table.delete_item(
+                Key={
+                    "user": item["user"],
+                    "period": item["period"]
+                }
+            )
+    except Exception as e:
+        print("❌ Delete Metadata Error delete_bankpwd:", str(e))
 
 
 def save_bankpwd_metadata(payload , user_id=os.environ.get("DEVELOP_BY")):
