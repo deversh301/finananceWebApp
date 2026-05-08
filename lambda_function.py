@@ -79,7 +79,14 @@ def lambda_handler(event, context):
             # step 1: hit endpoint to trigger the flow for downloading the pdf in google drive
             # hit_endpoint()
             # step 2: get PDF from drive and decrypt and store it in tmp folder and insert data in dynomo db transactions table
-            download_and_decrypt_pdf(banks)
+            res = download_and_decrypt_pdf(banks)
+            if res == False:
+                return {
+                    "statusCode": 500,
+                    "body": json.dumps({
+                        "message": "Please check your bank password data, it seems some error in decryption step"
+                    })
+                }
             # # step 3: prepare SES template data by fetching transactions period-wise and processing them and save in another table for Email reporting
             ses_template_data_prep()
             # step 4: send email using SES with the prepared template data
