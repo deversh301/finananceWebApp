@@ -1,5 +1,6 @@
 import json
 from decimal import Decimal
+import os
 from services.google_drive_service import (
     hit_endpoint,
     clean_endpoint
@@ -14,6 +15,7 @@ from services.email_service import (
 
 from services.database_service import (
     fetch_period_metadata,
+    fetch_bankpwd_metadata,
     save_bankpwd_metadata
 )
 
@@ -32,14 +34,24 @@ def lambda_handler(event, context):
         path = event["path"]
         method = event["httpMethod"]
         if path == "/bank-passwords" and method == "POST":
-            body = json.loads(event.get("body", "{}"))
-            save_bankpwd_metadata(body)
-            return {
-                "statusCode": 200,
-                "body": json.dumps({
-                    "message": "Hello API"
-                })
-            }
+            if action == "fetchdata":
+                data = fetch_bankpwd_metadata(os.environ.get("DEVELOP_BY"))
+                return {
+                    "statusCode": 200,
+                    "body": json.dumps({
+                        "message": "Data fetched successfully",
+                        "data": data
+                    }, default=decimal_default) # Add 'default' here
+                }
+            else:
+                body = json.loads(event.get("body", "{}"))
+                save_bankpwd_metadata(body)
+                return {
+                    "statusCode": 200,
+                    "body": json.dumps({
+                        "message": "Data saved successfully"
+                    })
+                }
         elif action == "fetchdata":
             data = fetch_period_metadata()
             return {

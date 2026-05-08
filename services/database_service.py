@@ -57,6 +57,23 @@ def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP
         print("❌ Metadata Save Error:", str(e))
 
 
+def fetch_bankpwd_metadata(user_id):
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = dynamodb.Table('period-wise-transaction')
+
+        response = table.query(
+            KeyConditionExpression=(
+                Key("user").eq(user_id) &
+                Key("data_type").eq("password_metadata")
+            )
+        )
+
+        items = response.get("Items", [])
+        return items[0] if items else {}
+    except Exception as e:
+        print("❌ Fetch Metadata Error fetch_bankpwd_metadata:", str(e))
+        return {}
 
 
 def save_bankpwd_metadata(payload , user_id=os.environ.get("DEVELOP_BY")):
