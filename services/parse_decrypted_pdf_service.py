@@ -240,7 +240,7 @@ def download_and_decrypt_pdf(banks):
               #print(f"✅ Parsed {build_period_from_transactions(json_output)} transactions for {file_name} - bank: {bank}")
                 print(f"✅ Parsed transactions for {file_name} - bank: {bank}")
                 period = build_period_from_transactions(json_output)   # ya jo bhi tera period logic hai
-                final_period = f"{period}_{bank}"
+                final_period = f"{file_name}_{period}_{bank}"
                 # 🔍 Check if exists
                 response = table.get_item(
                     Key={

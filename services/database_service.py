@@ -44,13 +44,14 @@ def save_transactions_bulk(transactions, bank, user_id=os.environ.get("DEVELOP_B
 def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP_BY")):
     try:
         print(f"Saving file metadata for period: {period}, file: {file_name}, bank: {bank}")
+        final_period = f"{file_name}_{period}_{bank}"
         metadata_table = dynamodb.Table("period-wise-transaction")
         metadata_table.put_item(
             Item={
                 "user": user_id,
                 "file_name": file_name,
                 "data_type": "file_metadata",
-                "period": period + "_" + bank,  # store period with bank to avoid conflicts with period metadata records
+                "period": final_period,  # store period with bank to avoid conflicts with period metadata records
                 'bank': bank
             }
         )
