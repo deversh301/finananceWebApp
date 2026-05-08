@@ -77,10 +77,10 @@ def delete_bankpwd(user_id, payload):
     try:
         dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
         table = dynamodb.Table('period-wise-transaction')
-
+        print(f"Attempting to delete bank password metadata for user: {user_id} with payload: {payload}")
         response = table.query(
             KeyConditionExpression=Key("user").eq(user_id),
-            FilterExpression=Attr("password").eq(payload.get("password")) & Attr("bank").eq(payload.get("bank")) & Attr("data_type").eq("password_metadata"),
+            FilterExpression=Attr("bank_password").eq(payload.get("password")) & Attr("bank").eq(payload.get("bank")) & Attr("data_type").eq("password_metadata"),
         )
 
         items = response.get("Items", [])
