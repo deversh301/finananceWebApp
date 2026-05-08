@@ -63,10 +63,8 @@ def fetch_bankpwd_metadata(user_id):
         table = dynamodb.Table('period-wise-transaction')
 
         response = table.query(
-            KeyConditionExpression=(
-                Key("user").eq(user_id) &
-                Key("data_type").eq("password_metadata")
-            )
+            KeyConditionExpression=Key("user").eq(user_id),
+            FilterExpression=Attr("data_type").eq("password_metadata")
         )
 
         items = response.get("Items", [])
