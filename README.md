@@ -123,3 +123,11 @@ Invoke-WebRequest -Uri http://localhost:9000/2015-03-31/functions/function/invoc
 ## 👨‍💻 Developed By
 
 Shubham 🚀
+
+
+aws dynamodb delete-table --table-name transactions  --region ap-south-1
+
+
+docker run --env-file env.txt -p 9000:8080 -v ${PWD}:/var/task drive-lambda
+
+curl -X POST   "http://localhost:9000/2015-03-31/functions/function/invocations"   -H "Content-Type: application/json"   -d @event.json

@@ -41,7 +41,7 @@ def save_transactions_bulk(transactions, bank, user_id=os.environ.get("DEVELOP_B
         print("❌ Bulk Error:", str(e))
 
 
-def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP_BY")):
+def save_file_metadata(period, file_name, bank , rangePeriod, user_id=os.environ.get("DEVELOP_BY")):
     try:
         print(f"Saving file metadata for period: {period}, file: {file_name}, bank: {bank}")
         final_period = f"{file_name}_{period}_{bank}"
@@ -51,13 +51,31 @@ def save_file_metadata(period, file_name, bank , user_id=os.environ.get("DEVELOP
                 "user": user_id,
                 "file_name": file_name,
                 "data_type": "file_metadata",
-                "period": final_period,  # store period with bank to avoid conflicts with period metadata records
+                "period": period,  # store period with bank to avoid conflicts with period metadata records
+                "file_range_period": rangePeriod,
                 'bank': bank
             }
         )
         print("✅ File metadata saved successfully")
     except Exception as e:
         print("❌ Metadata Save Error:", str(e))
+
+
+def fetch_metadata(user_id , type_of_data):
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = dynamodb.Table('period-wise-transaction')
+
+        response = table.query(
+            KeyConditionExpression=Key("user").eq(user_id),
+            FilterExpression=Attr("data_type").eq(type_of_data)
+        )
+
+        items = response.get("Items", [])
+        return items
+    except Exception as e:
+        print("❌ Fetch Metadata Error fetch_period_metadata", str(e))
+        return []
 
 
 def fetch_bankpwd_metadata(user_id):
@@ -160,32 +178,20 @@ def save_period_data(user, template_data):
 
         prev_item = prev_items[0] if prev_items else None
         item = {
+            **template_data,
             "user": user,
-            "period": template_data["period"],
-            "passive_change": calc_percentage_change( clean_amount(template_data["total_passive"]), clean_amount(prev_item.get('total_passive', 0)) if prev_item else 0.0),  # example change calculation
-            "spend_change": calc_percentage_change(clean_amount(template_data["total_spends"]), clean_amount(prev_item.get('total_spends', 0)) if prev_item else 0.0),  # example change calculation
-            "hdfc_name": template_data["hdfc_name"],
-            "hdfc_balance": template_data["hdfc_balance"],
-            "hdfc_salary": template_data["hdfc_salary"],
-            "hdfc_passive": template_data["hdfc_passive"],
-            "hdfc_spends": template_data["hdfc_spends"],
-            "hdfc_highest": template_data["hdfc_highest"],
-            "is_bank_one_present": template_data["is_bank_one_present"],
-            "is_bank_two_present": template_data["is_bank_two_present"],
-            "icici_name": template_data["icici_name"],
-            "icici_balance": template_data["icici_balance"],
-            "icici_salary": template_data["icici_salary"],
-            "icici_passive": template_data["icici_passive"],
-            "icici_spends": template_data["icici_spends"],
-            "icici_highest": template_data["icici_highest"],
-            "data_type": "period_metadata",
-            "total_balance": template_data["total_balance"],
-            "total_income": template_data["total_income"],
-            "total_passive": template_data["total_passive"],
-            "total_spends": template_data["total_spends"],
-            "net_savings": template_data["net_savings"]
+            "passive_change": calc_percentage_change(
+                clean_amount(template_data.get("total_passive", 0)),
+                clean_amount(prev_item.get("total_passive", 0))
+                if prev_item else 0.0
+            ),
+            "spend_change": calc_percentage_change(
+                clean_amount(template_data.get("total_spends", 0)),
+                clean_amount(prev_item.get("total_spends", 0))
+                if prev_item else 0.0
+            ),
+            "data_type": "period_metadata"
         }
-
         table.put_item(Item=item)
     except Exception as e:
         print("❌ Period Data Save Error:", str(e))

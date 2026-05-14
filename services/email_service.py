@@ -227,7 +227,180 @@ def make_ses_data(items, period):
     except Exception as e:
         print("❌ DynamoDB Error:", str(e))
         return []
-    
+
+
+
+def make_ses_data_updated(items, period):
+    try:
+        data = defaultdict(lambda: defaultdict(float))
+
+        highest_spend = defaultdict(
+            lambda: {"amount": 0, "name": ""}
+        )
+
+        latest_balance = defaultdict(
+            lambda: {"date": None, "balance": 0}
+        )
+
+        keywords_salary = get_list_env("KEYWORDS_SALARY")
+        include_passive = get_list_env("INCLUDE_PASSIVE")
+        exclude_passive = get_list_env("EXCLUDE_PASSIVE")
+        exclude_withdrawal = get_list_env("EXCLUDE_WITHDRAWAL")
+
+        # =========================
+        # PROCESS TRANSACTIONS
+        # =========================
+
+        for item in items:
+
+            bank = item.get("bank", "").lower().strip()
+
+            if not bank:
+                continue
+
+            date_str = item.get("date")
+
+            if not date_str:
+                continue
+
+            try:
+                date_obj = datetime.strptime(
+                    date_str.strip(),
+                    "%d-%m-%Y"
+                )
+            except:
+                continue
+
+            deposit = parse_number(item.get("deposit"))
+            withdrawal = parse_number(item.get("withdrawal"))
+            balance = parse_number(item.get("balance"))
+
+            particulars = item.get(
+                "particulars",
+                ""
+            ).lower()
+
+            # =========================
+            # LATEST BALANCE
+            # =========================
+
+            if (
+                latest_balance[bank]["date"] is None
+                or date_obj >= latest_balance[bank]["date"]
+            ):
+                latest_balance[bank]["date"] = date_obj
+                latest_balance[bank]["balance"] = balance
+
+            # =========================
+            # DEPOSITS
+            # =========================
+
+            if deposit > 0:
+
+                data[bank]["total_deposit"] += deposit
+
+                if any(k in particulars for k in keywords_salary):
+                    data[bank]["salary"] += deposit
+
+                elif any(k in particulars for k in include_passive):
+                    data[bank]["passive"] += deposit
+
+                elif any(k in particulars for k in exclude_passive):
+                    data[bank]["self_transfer"] += deposit
+
+                else:
+                    data[bank]["others"] += deposit
+
+            # =========================
+            # WITHDRAWALS
+            # =========================
+
+            if any(k in particulars for k in exclude_withdrawal):
+                data[bank]["self_deposit"] += withdrawal
+
+            else:
+                data[bank]["spends"] += withdrawal
+
+            # =========================
+            # HIGHEST SPEND
+            # =========================
+
+            if withdrawal > highest_spend[bank]["amount"]:
+
+                highest_spend[bank]["amount"] = withdrawal
+
+                highest_spend[bank]["name"] = particulars[:20]
+
+        # =========================
+        # TEMPLATE DATA
+        # =========================
+
+        template_data = {
+            "period": period,
+            "passive_change": "+14%",
+            "spend_change": "+14%",
+        }
+
+        total_balance = 0
+        total_income = 0
+        total_passive = 0
+        total_spends = 0
+
+        banks = list(data.keys())
+
+        # dynamic bank1, bank2, bank3...
+        for index, bank in enumerate(banks, start=1):
+
+            balance = int(
+                latest_balance[bank]["balance"]
+            )
+
+            salary = int(data[bank]["salary"])
+
+            passive = int(data[bank]["passive"])
+
+            spends = int(data[bank]["spends"])
+
+            template_data[f"{bank}_name"] = bank.upper()
+
+            template_data[f"{bank}_balance"] = f"₹{balance}"
+
+            template_data[f"{bank}_salary"] = f"₹{salary}"
+
+            template_data[f"{bank}_passive"] = f"₹{passive}"
+
+            template_data[f"{bank}_spends"] = f"₹{spends}"
+
+            template_data[f"{bank}_highest"] = highest_spend[bank]["name"]
+
+            template_data[f"is_{bank}_present"] = True
+
+            total_balance += balance
+            total_income += salary + passive
+            total_passive += passive
+            total_spends += spends
+
+        # =========================
+        # TOTALS
+        # =========================
+
+        template_data["total_balance"] = f"₹{total_balance}"
+
+        template_data["total_income"] = f"₹{total_income}"
+
+        template_data["total_passive"] = f"₹{total_passive}"
+
+        template_data["total_spends"] = f"₹{total_spends}"
+
+        template_data["net_savings"] = f"₹{total_income - total_spends}"
+
+        return template_data
+
+    except Exception as e:
+
+        print("❌ Error:", str(e))
+
+        return {}
 
     
 # main function to prepare SES template data by fetching transactions period-wise and processing them
@@ -243,8 +416,8 @@ def ses_template_data_prep():
             items = get_items_for_period(start, end)
           #print(f"Transactions for {period}:", items)
             # print(f"Items for {period}:", items)
-            template_data = make_ses_data(items, period)
-            print(f"Template data for {period}:", template_data)
+            template_data = make_ses_data_updated(items, period)
+            # print(f"Template data for {period}:", template_data)
             save_period_data(os.environ.get("DEVELOP_BY"), template_data)
         
     except Exception as e:

@@ -17,6 +17,7 @@ from services.email_service import (
 from services.database_service import (
     fetch_period_metadata,
     fetch_bankpwd_metadata,
+    fetch_metadata,
     delete_bankpwd,
     save_bankpwd_metadata
 )
@@ -25,6 +26,9 @@ from helpers.helper import (
     decimal_default
 )
 
+from services.statement_coverage_service import (
+    get_stetement_coverage
+)
 
 
 # main Lambda handler function to orchestrate the entire workflow
@@ -71,6 +75,19 @@ def lambda_handler(event, context):
                 "body": json.dumps({
                     "message": "Data fetched successfully",
                     "data": data
+                }, default=decimal_default) # Add 'default' here
+            }
+        
+        elif action == "fetchStatementPeriod":
+                body = json.loads(event.get("body", "{}"))
+                dataMata = fetch_metadata(os.environ.get("DEVELOP_BY"), 'file_metadata')
+                output = get_stetement_coverage(dataMata, "shubham")
+                # delete_bankpwd(os.environ.get("DEVELOP_BY"),body)
+                return {
+                "statusCode": 200,
+                "body": json.dumps({
+                    "message": "Data fetched successfully",
+                    "data": output
                 }, default=decimal_default) # Add 'default' here
             }
         else:

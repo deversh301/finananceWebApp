@@ -1,0 +1,14 @@
+{
+  "resource": "/hello",
+  "path": "/hello",
+  "httpMethod": "POST",
+  "headers": {
+    "content-type": "application/json",
+    "x-api-key": "test-key"
+  },
+  "queryStringParameters": {
+    "action": "fetchStatementPeriod"
+  },
+  "body": "{\"banks\":[{\"filename\":\"Statement_MAY2026_250534572 (2).pdf\",\"password\":\"SHUB2009\",\"bankName\":\"icici\",\"title\":\"ICICI BIG Statement\"},{\"filename\":\"Account Statement (2).pdf\",\"password\":\"131070115\",\"bankName\":\"hdfc\",\"title\":\"Hdfc Statement\"}]}",
+  "isBase64Encoded": false
+}
