@@ -79,7 +79,6 @@ def lambda_handler(event, context):
             }
         
         elif action == "fetchStatementPeriod":
-                body = json.loads(event.get("body", "{}"))
                 dataMata = fetch_metadata(os.environ.get("DEVELOP_BY"), 'file_metadata')
                 output = get_stetement_coverage(dataMata, "shubham")
                 # delete_bankpwd(os.environ.get("DEVELOP_BY"),body)
