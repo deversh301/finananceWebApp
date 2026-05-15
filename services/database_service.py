@@ -4,6 +4,7 @@ from boto3.dynamodb.conditions import Key, Attr
 from datetime import datetime
 import calendar
 from dateutil.relativedelta import relativedelta
+import re
 
 from helpers.helper import ( 
     generate_txn_id,
@@ -291,6 +292,84 @@ def get_items_for_period(start, end):
     return items
 
 
+def clean_currency(value):
+    try:
+        """
+        Converts:
+        ₹4399 -> 4399
+        ₹0 -> 0
+        None -> 0
+        """
+        if not value:
+            return 0
+
+        value = str(value)
+        value = re.sub(r"[^\d.]", "", value)
+
+        return int(float(value)) if value else 0
+    except Exception as e:
+        print("❌ clean_currency:", str(e))
+        return {}
+
+
+def last_five_months_value(user, column_name, data_type):
+    try:
+        dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
+        table = dynamodb.Table('period-wise-transaction')
+        # Last 5 months including current
+        months = ["Jan", "Feb", "Mar", "Apr", "May",
+                "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+        current_month = datetime.now().month - 1
+
+        required_months = []
+
+        for i in range(4, -1, -1):
+            index = (current_month - i) % 12
+            required_months.append(months[index])
+
+        # Fetch data from DynamoDB
+        response = table.scan(
+            FilterExpression=Key("user").eq(user)
+            & Key("data_type").eq(data_type)
+        )
+
+        items = response.get("Items", [])
+
+        # Default output
+        result_map = {month: 0 for month in required_months}
+
+        for item in items:
+            period = item.get("period", "")
+
+            # Example:
+            # 01 Jan 2026 - 31 Jan 2026
+            try:
+                month = datetime.strptime(
+                    period.split(" - ")[0],
+                    "%d %b %Y"
+                ).strftime("%b")
+
+                if month in result_map:
+                    result_map[month] = clean_currency(
+                        item.get(column_name, 0)
+                    )
+
+            except Exception:
+                pass
+
+        return [
+            {
+                "value": result_map[month],
+                "label": month
+            }
+            for month in required_months
+        ]
+    except Exception as e:
+            print("❌ last_five_months_value:", str(e))
+            return {}
+
+
 def fetch_period_metadata():
     try:
         dynamodb = boto3.resource("dynamodb", region_name="ap-south-1")
@@ -307,7 +386,11 @@ def fetch_period_metadata():
         items = response.get("Items", [])
         data = items[0] if items else {}
         month_status = build_month_status(items)
+        incomeData =  last_five_months_value(os.environ.get("DEVELOP_BY"),"total_income", "period_metadata")
+        expenseData = last_five_months_value(os.environ.get("DEVELOP_BY"),"total_spends", "period_metadata")
         data["month_status"] = month_status
+        data["income_data"] = incomeData
+        data["expense_data"] = expenseData
         return data
     except Exception as e:
         print("❌ Fetch Metadata Error:", str(e))
