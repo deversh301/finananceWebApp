@@ -34,6 +34,7 @@ def save_transactions_bulk(transactions, bank, user_id=os.environ.get("DEVELOP_B
                     "deposit": to_decimal(txn.get("deposit")),
                     "withdrawal": to_decimal(txn.get("withdrawal")),
                     "balance": to_decimal(txn.get("balance")),
+                    "created_at": datetime.utcnow().isoformat(),
                 }
                 batch.put_item(Item=item)
       #print("🚀 Bulk insert done")

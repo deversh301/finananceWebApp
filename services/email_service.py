@@ -273,6 +273,7 @@ def make_ses_data_updated(items, period):
 
             deposit = parse_number(item.get("deposit"))
             withdrawal = parse_number(item.get("withdrawal"))
+            created_at = item.get("created_at")
             balance = parse_number(item.get("balance"))
 
             particulars = item.get(
@@ -283,12 +284,21 @@ def make_ses_data_updated(items, period):
             # =========================
             # LATEST BALANCE
             # =========================
-
+            created_dt = datetime.fromisoformat(created_at)
             if (
                 latest_balance[bank]["date"] is None
-                or date_obj >= latest_balance[bank]["date"]
+                or
+                date_obj > latest_balance[bank]["date"]
+                or (
+
+                    date_obj == latest_balance[bank]["date"]
+                    and
+                    created_dt > latest_balance[bank]["created_at"]
+                )
             ):
+
                 latest_balance[bank]["date"] = date_obj
+                latest_balance[bank]["created_at"] = created_dt
                 latest_balance[bank]["balance"] = balance
 
             # =========================
